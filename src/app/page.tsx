@@ -1,3 +1,4 @@
+import { UpdateDataButton } from "@/components/update-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getFertilizers, getIndicators } from "@/lib/services";
@@ -39,7 +40,10 @@ export default async function Dashboard() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Resumo de Mercado</h2>
-            <Badge variant="outline" className="bg-white">Atualizado: {new Date().toLocaleDateString()}</Badge>
+            <div className="flex items-center gap-2">
+              <UpdateDataButton />
+              <Badge variant="outline" className="bg-white">Atualizado: {new Date().toLocaleDateString()}</Badge>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

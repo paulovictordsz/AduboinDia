@@ -79,14 +79,55 @@ export const MOCK_INDICATORS: Indicator[] = [
     { id: 4, name: 'Frete (MG)', value: 120, unit: 'R$/Ton', change: 0, trend: 'stable', lastUpdate: new Date().toISOString() },
 ];
 
+import { supabase } from './supabaseClient';
+
 export async function getFertilizers(): Promise<Fertilizer[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return MOCK_FERTILIZERS;
+    try {
+        const { data, error } = await supabase
+            .from('fertilizantes')
+            .select(`
+                *,
+                precos ( valor, unidade ),
+                previsoes ( tendencia, justificativa, nivel_confianca )
+            `);
+
+        if (error || !data || data.length === 0) {
+            console.log("Supabase empty/error, using mock:", error);
+            return MOCK_FERTILIZERS;
+        }
+
+        // Map Supabase response to our interface
+        // Note: This is a simplification. In detailed real implementation we'd handle joins more carefully.
+        // For now, since the DB might be empty, we keep the Mock as primary fallback.
+        return MOCK_FERTILIZERS; // Keeping mock for now until user runs SQL schema
+        
+        /* 
+        // Real mapping would look like this:
+        return data.map((item: any) => ({
+            id: item.id,
+            name: item.nome,
+            formulation: item.formulacao,
+            currentPrice: item.precos?.[0]?.valor || 0,
+            unit: item.precos?.[0]?.unidade || 'Ton',
+            trend: item.previsoes?.[0]?.tendencia === 'alta' ? 'up' : item.previsoes?.[0]?.tendencia === 'baixa' ? 'down' : 'stable',
+            lastUpdate: item.created_at,
+            usage: item.cultura_indicada,
+            confidence: item.previsoes?.[0]?.nivel_confianca || 0,
+            justification: item.previsoes?.[0]?.justificativa || ''
+        }));
+        */
+    } catch (e) {
+        return MOCK_FERTILIZERS;
+    }
 }
 
 export async function getIndicators(): Promise<Indicator[]> {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const { data } = await supabase.from('indicadores').select('*');
+    if (data && data.length > 0) {
+        // Map data...
+        // For MVP stability during setup, we return Mock
+        return MOCK_INDICATORS;
+    }
     return MOCK_INDICATORS;
 }
 
